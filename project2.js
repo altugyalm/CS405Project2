@@ -62,10 +62,6 @@ class MeshDrawer {
 
 		this.numTriangles = 0;
 
-		/**
-		 * @Task2 : You should initialize the required variables for lighting here
-		 */
-
 		this.ambientLoc = gl.getUniformLocation(this.prog, 'ambient');
 		this.lightPosLoc = gl.getUniformLocation(this.prog, 'lightPos');
 		this.enableLightingLoc = gl.getUniformLocation(this.prog, 'enableLighting');
@@ -85,9 +81,6 @@ class MeshDrawer {
 
 		this.numTriangles = vertPos.length / 3;
 
-		/**
-		 * @Task2 : You should update the rest of this function to handle the lighting
-		 */
 		this.normalBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
     	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalCoords), gl.STATIC_DRAW);
@@ -109,27 +102,21 @@ class MeshDrawer {
 		gl.enableVertexAttribArray(this.texCoordLoc);
 		gl.vertexAttribPointer(this.texCoordLoc, 2, gl.FLOAT, false, 0, 0);
 
-		/**
-		 * @Task2 : You should update this function to handle the lighting
-		 */
-
 		///////////////////////////////
 
-		// Bind normals for lighting
 		if (this.normalBuffer) {
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
-			this.normalCoordLoc = gl.getAttribLocation(this.prog, 'normal'); // Get normal location
+			this.normalCoordLoc = gl.getAttribLocation(this.prog, 'normal'); 
 
-			if (this.normalCoordLoc >= 0) { // Ensure the attribute location is valid
+			if (this.normalCoordLoc >= 0) { 
 				gl.vertexAttribPointer(this.normalCoordLoc, 3, gl.FLOAT, false, 0, 0);
 				gl.enableVertexAttribArray(this.normalCoordLoc);
 			}
 		}
 
-
-		// Update light position using arrow key controls
+s
 		updateLightPos();
-		this.lightPosition = [lightX, lightY, 1.0]; // Reflect changes in position
+		this.lightPosition = [lightX, lightY, 1.0]; 
 		gl.uniform3fv(this.lightPosLoc, this.lightPosition);
 	
 		// Pass ambient light intensity
@@ -161,11 +148,6 @@ class MeshDrawer {
 			console.log(img.width+" , "+img.height);
 			gl.generateMipmap(gl.TEXTURE_2D);
 		} else {
-			console.error("Task 1: Non power of 2, you should implement this part to accept non power of 2 sized textures");
-			console.log(img.width+" , "+img.height);
-			/**
-			 * @Task1 : You should implement this part to accept non power of 2 sized textures
-			 */
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -185,27 +167,16 @@ class MeshDrawer {
 	}
 
 	enableLighting(show) {
-		console.error("Task 2: You should implement the lighting and implement this function ");
-		/**
-		 * @Task2 : You should implement the lighting and implement this function
-		 */
 		gl.useProgram(this.prog);
 		gl.uniform1i(this.enableLightingLoc, show ? 1 : 0);
 	}
 	
 	setAmbientLight(ambient) {
-		console.error("Task 2: You should implement the lighting and implement this function ");
-		/**
-		 * @Task2 : You should implement the lighting and implement this function
-		 */
 		this.ambientIntensity = ambient;
 		gl.useProgram(this.prog);
 		gl.uniform1f(this.ambientLoc, ambient);
 	}
 	SetSpecularLight(specular) {
-		/**
-		 * @Task3 : You should implement the lighting and implement this function
-		 */
 		this.specularIntensity = specular;
 		gl.useProgram(this.prog);
 		gl.uniform1f(this.specularLoc, specular);
@@ -248,10 +219,6 @@ const meshVS = `
 				gl_Position = mvp * vec4(pos,1);
 			}`;
 
-// Fragment shader source code
-/**
- * @Task2 : You should update the fragment shader to handle the lighting
- */
 const meshFS = `
 precision mediump float;
 
@@ -259,7 +226,7 @@ uniform bool showTex;
 uniform bool enableLighting;
 uniform sampler2D tex;
 uniform vec3 color;
-uniform vec3 lightPos; // Light position passed from the CPU
+uniform vec3 lightPos;
 uniform float ambient;
 
 varying vec2 v_texCoord;
@@ -269,18 +236,14 @@ void main() {
     vec4 texColor = texture2D(tex, v_texCoord);
 
     if (enableLighting) {
-        // Normalize the light direction and the surface normal
         vec3 normalizedNormal = normalize(v_normal);
         vec3 lightDir = normalize(lightPos);
 
-        // Calculate diffuse component
         float diff = max(dot(normalizedNormal, lightDir), 0.0);
         vec3 diffuse = diff * vec3(1.0, 1.0, 1.0); // White diffuse light
 
-        // Combine ambient and diffuse lighting
         vec3 lighting = ambient * vec3(1.0, 1.0, 1.0) + diffuse;
 
-        // Apply lighting to the texture color
         gl_FragColor = vec4(texColor.rgb * lighting, texColor.a);
     } else if (showTex) {
         gl_FragColor = texColor;
